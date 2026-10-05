@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Best Friend Quiz</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #ffebee, #f3e8ff, #e0f2fe);
+      color: #1f2937;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .quiz-box {
+      width: 100%;
+      max-width: 900px;
+      background: rgba(255,255,255,0.88);
+      border-radius: 20px;
+      padding: 25px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.12);
+    }
+
+    h1 {
+      margin-top: 0;
+      text-align: center;
+      font-size: clamp(2rem, 4vw, 2.8rem);
+    }
+
+    .progress {
+      height: 12px;
+      background: #e5e7eb;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .progress-bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(135deg, #8b5cf6, #ec4899);
+      transition: width 0.3s ease;
+    }
+
+    .question {
+      display: none;
+    }
+
+    .question.active {
+      display: block;
+    }
+
+    .question h2 {
+      font-size: clamp(1.3rem, 2vw, 1.8rem);
+      margin-bottom: 18px;
+    }
+
+    .options {
+      display: grid;
+      gap: 12px;
+    }
+
+    .option {
+      width: 100%;
+      text-align: left;
+      padding: 15px 16px;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      background: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .option:hover {
+      background: #f8fafc;
+      border-color: #a78bfa;
+      transform: translateY(-1px);
+    }
+
+    .option.selected {
+      background: #f3e8ff;
+      border-color: #8b5cf6;
+    }
+
+    .nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 25px;
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #8b5cf6, #ec4899);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3);
+    }
+
+    .btn-secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .btn-secondary:hover {
+      background: #d1d5db;
+    }
+
+    .result {
+      display: none;
+      text-align: center;
+    }
+
+    .result.show {
+      display: block;
+      animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .score-box {
+      background: linear-gradient(135deg, #8b5cf6, #ec4899);
+      color: white;
+      border-radius: 18px;
+      padding: 30px 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 15px 35px rgba(139, 92, 246, 0.3);
+    }
+
+    .score-label {
+      font-size: 1.1rem;
+      opacity: 0.95;
+      margin-bottom: 8px;
+    }
+
+    .score-number {
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      font-weight: 900;
+      letter-spacing: -0.05em;
+      line-height: 1;
+    }
+
+    .score-max {
+      font-size: 1.2rem;
+      opacity: 0.9;
+      margin-top: 8px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 12px 24px;
+      border-radius: 999px;
+      font-weight: bold;
+      margin: 15px 0;
+      font-size: 1.1rem;
+    }
+
+    .badge.best {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .badge.safe {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    .badge.investigate {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .badge.warning {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .badge.block {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .message {
+      color: #6b7280;
+      font-size: 1.05rem;
+      line-height: 1.6;
+      max-width: 600px;
+      margin: 15px auto;
+    }
+
+    .share-area {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    .share-btn {
+      background: #111827;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 18px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .copied-msg {
+      margin-top: 12px;
+      color: #16a34a;
+      font-weight: 700;
+      min-height: 24px;
+    }
+
+    .result-footer {
+      margin-top: 25px;
+      padding-top: 20px;
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 600px) {
+      .quiz-box {
+        padding: 18px;
+      }
+      .nav-buttons,
+      .result-footer {
+        flex-direction: column;
+      }
+      .nav-buttons button,
+      .result-footer button,
+      .share-btn {
+        width: 100%;
+      }
+      .score-box {
+        padding: 25px 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-box">
+    <h1>Best Friend Quiz</h1>
+
+    <div class="progress">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <div id="quiz"></div>
+
+    <div id="result" class="result">
+      <div class="score-box">
+        <div class="score-label">Your Total Score</div>
+        <div class="score-number" id="score"></div>
+        <div class="score-max" id="maxScore"></div>
+      </div>
+
+      <div class="badge" id="badge"></div>
+      <p class="message" id="message"></p>
+
+      <div class="share-area">
+        <button class="share-btn" id="shareBtn">Share this quiz</button>
+      </div>
+      <div class="copied-msg" id="copiedMsg"></div>
+
+      <div class="result-footer">
+        <button class="btn-primary" onclick="restartQuiz()">Take Quiz Again</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        question: 'If I text you "Hey 👀", what do you reply?',
+        options: [
+          { text: 'Heyyy 😂', points: 4 },
+          { text: 'Who is this? 🤨', points: 1 },
+          { text: 'Seen ✓', points: 2 }
+        ]
+      },
+      {
+        question: 'I send you a funny reel. What do you do?',
+        options: [
+          { text: 'Send another funny reel 🤣', points: 4 },
+          { text: 'Like it ❤️', points: 3 },
+          { text: 'Ignore it 😶', points: 1 }
+        ]
+      },
+      {
+        question: 'I ask, "Are you free?"',
+        options: [
+          { text: 'For you, always 😎', points: 4 },
+          { text: 'Depends... why? 👀', points: 3 },
+          { text: 'Nope 😂', points: 1 }
+        ]
+      },
+      {
+        question: 'I tell you a secret. What do you do?',
+        options: [
+          { text: 'Keep it secret 🤐', points: 4 },
+          { text: 'Tell my best friend 👀', points: 1 },
+          { text: 'Accidentally tell everyone 💀', points: 0 }
+        ]
+      },
+      {
+        question: 'What do you do one night before an exam? 📚',
+        options: [
+          { text: 'Study seriously 🤓', points: 3 },
+          { text: 'Study for 30 minutes and panic 😭', points: 2 },
+          { text: 'Whatever happens, happens. 😎', points: 4 }
+        ]
+      },
+      {
+        question: 'What is your biggest exam fear? 😰',
+        options: [
+          { text: 'Forgetting everything 😭', points: 2 },
+          { text: 'Difficult questions 💀', points: 3 },
+          { text: 'Teacher watching me 👀', points: 1 }
+        ]
+      },
+      {
+        question: 'Your exam went terribly. What do you do?',
+        options: [
+          { text: 'Start planning for the next one 😌', points: 4 },
+          { text: 'Complain to friends 😂', points: 3 },
+          { text: 'Sleep and forget everything 😴', points: 1 }
+        ]
+      },
+      {
+        question: 'What is your ultimate comfort food? 🍕',
+        options: [
+          { text: 'Pizza 🍕', points: 4 },
+          { text: 'Biryani 🍗', points: 3 },
+          { text: 'Ice cream 🍦', points: 2 }
+        ]
+      },
+      {
+        question: 'Someone offers you free food. What is your reaction? 😂',
+        options: [
+          { text: 'WHERE?! 🏃', points: 4 },
+          { text: 'What food? 👀', points: 2 },
+          { text: "I'm not hungry... 😇", points: 1 }
+        ]
+      },
+      {
+        question: 'Pick your favourite game 🎮',
+        options: [
+          { text: 'BGMI / PUBG 🔫', points: 3 },
+          { text: 'Free Fire 🔥', points: 2 },
+          { text: 'Minecraft / Roblox 🎮', points: 4 }
+        ]
+      },
+      {
+        question: 'You lose a game because of me. What do you do? 😤',
+        options: [
+          { text: 'Blame me 😂', points: 1 },
+          { text: 'Rematch immediately 🔥', points: 4 },
+          { text: "It's just a game. 😌", points: 3 }
+        ]
+      },
+      {
+        question: 'What scares you the most? 😱',
+        options: [
+          { text: 'Ghosts 👻', points: 1 },
+          { text: 'Losing someone I love 💔', points: 4 },
+          { text: 'Exams 😭', points: 2 }
+        ]
+      },
+      {
+        question: 'What makes you instantly happy? ❤️',
+        options: [
+          { text: 'Food 🍕', points: 3 },
+          { text: 'Me 👯', points: 4 },
+          { text: 'Money 💰', points: 2 }
+        ]
+      },
+      {
+        question: "When you're sad, what do you usually do? 😔",
+        options: [
+          { text: 'Listen to music 🎧', points: 3 },
+          { text: 'Talk to me ❤️', points: 4 },
+          { text: 'Stay alone 😶', points: 1 }
+        ]
+      },
+      {
+        question: 'Someone hurts your feelings. What do you do? 🥲',
+        options: [
+          { text: 'Tell them directly', points: 4 },
+          { text: 'Stay silent 🤐', points: 2 },
+          { text: "Pretend I'm okay 😎", points: 1 }
+        ]
+      },
+      {
+        question: 'What makes you angry the fastest? 😤',
+        options: [
+          { text: 'Being ignored 👀', points: 3 },
+          { text: 'Someone lying 🤥', points: 4 },
+          { text: 'Losing Wi-Fi 📶', points: 2 }
+        ]
+      },
+      {
+        question: 'If you suddenly get ₹10,000, what would you do? 💰',
+        options: [
+          { text: 'Shopping 🛍️', points: 2 },
+          { text: 'Food + me 🍕', points: 3 },
+          { text: 'Save it 💵', points: 4 }
+        ]
+      },
+      {
+        question: "What's your weekend plan? 😎",
+        options: [
+          { text: 'Sleep all day 😴', points: 2 },
+          { text: 'Go out with me 🎉', points: 4 },
+          { text: 'Games + movies 🎮🍿', points: 3 }
+        ]
+      },
+      {
+        question: 'I say "I have something important to tell you..." 👀',
+        options: [
+          { text: 'Tell me RIGHT NOW!', points: 3 },
+          { text: 'Is everything okay? 😭', points: 2 },
+          { text: "I'll wait patiently 😌", points: 4 }
+        ]
+      },
+      {
+        question: 'Be honest... what type of friend are you? 😂',
+        options: [
+          { text: 'The funny one 🤣', points: 3 },
+          { text: 'The caring one ❤️', points: 4 },
+          { text: 'The annoying one 💀', points: 2 }
+        ]
+      }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+    const maxPossibleScore = questions.length * 4;
+    const quiz = document.getElementById('quiz');
+    const resultBox = document.getElementById('result');
+    const progressBar = document.getElementById('progressBar');
+    const scoreElement = document.getElementById('score');
+    const maxScoreElement = document.getElementById('maxScore');
+    const badgeElement = document.getElementById('badge');
+    const messageElement = document.getElementById('message');
+    const shareBtn = document.getElementById('shareBtn');
+    const copiedMsg = document.getElementById('copiedMsg');
+
+    function renderQuiz() {
+      quiz.innerHTML = '';
+
+      questions.forEach((q, index) => {
+        const questionDiv = document.createElement('div');
+        questionDiv.className = 'question' + (index === currentQuestion ? ' active' : '');
+
+        const questionTitle = document.createElement('h2');
+        questionTitle.textContent = `${index + 1}. ${q.question}`;
+        questionDiv.appendChild(questionTitle);
+
+        const optionsDiv = document.createElement('div');
+        optionsDiv.className = 'options';
+
+        q.options.forEach(option => {
+          const button = document.createElement('button');
+          button.className = 'option';
+          button.textContent = option.text;
+          button.onclick = () => selectOption(index, option.points, button);
+
+          const savedAnswer = sessionStorage.getItem(`answer-${index}`);
+          if (savedAnswer === option.text) button.classList.add('selected');
+
+          optionsDiv.appendChild(button);
+        });
+
+        questionDiv.appendChild(optionsDiv);
+
+        const navButtons = document.createElement('div');
+        navButtons.className = 'nav-buttons';
+
+        if (index > 0) {
+          const prevBtn = document.createElement('button');
+          prevBtn.className = 'btn-secondary';
+          prevBtn.textContent = 'Previous';
+          prevBtn.onclick = () => {
+            currentQuestion--;
+            renderQuiz();
+          };
+          navButtons.appendChild(prevBtn);
+        }
+
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'btn-primary';
+        nextBtn.textContent = index === questions.length - 1 ? 'Finish Quiz' : 'Next';
+        nextBtn.onclick = () => {
+          if (index < questions.length - 1) {
+            currentQuestion++;
+            renderQuiz();
+          } else {
+            showResult();
+          }
+        };
+
+        navButtons.appendChild(nextBtn);
+        questionDiv.appendChild(navButtons);
+
+        quiz.appendChild(questionDiv);
+      });
+
+      const progress = ((currentQuestion + 1) / questions.length) * 100;
+      progressBar.style.width = `${progress}%`;
+    }
+
+    function selectOption(index, points, button) {
+      const allButtons = button.parentElement.querySelectorAll('.option');
+      allButtons.forEach(btn => btn.classList.remove('selected'));
+      button.classList.add('selected');
+
+      const selectedText = button.textContent;
+      sessionStorage.setItem(`answer-${index}`, selectedText);
+
+      const previous = Number(sessionStorage.getItem(`score-${index}`) || 0);
+      if (previous) score -= previous;
+
+      score += points;
+      sessionStorage.setItem(`score-${index}`, points);
+
+      updateTotalScore();
+    }
+
+    function updateTotalScore() {
+      let total = 0;
+      for (let i = 0; i < questions.length; i++) {
+        total += Number(sessionStorage.getItem(`score-${i}`) || 0);
+      }
+      score = total;
+    }
+
+    function showResult() {
+      updateTotalScore();
+
+      quiz.style.display = 'none';
+      resultBox.classList.add('show');
+
+      scoreElement.textContent = score;
+      maxScoreElement.textContent = `out of ${maxPossibleScore}`;
+
+      let badgeText = '';
+      let message = '';
+
+      if (score >= 80) {
+        badgeText = '❤️ BEST FRIEND MATERIAL ❤️';
+        message = 'You are the kind of person everyone wants on their side. Loyal, fun, and emotionally solid. We are lucky to have you!';
+        badgeElement.className = 'badge best';
+      } else if (score >= 60) {
+        badgeText = '✅ SAFE FROM THE BLOCK';
+        message = "You're pretty solid. A good friend with a nice balance of fun and care. Keep it up!";
+        badgeElement.className = 'badge safe';
+      } else if (score >= 40) {
+        badgeText = '🔍 UNDER INVESTIGATION';
+        message = 'You have potential, but a little more effort and consistency would make you unstoppable.';
+        badgeElement.className = 'badge investigate';
+      } else if (score >= 20) {
+        badgeText = '⚠️ BLOCKING WARNING';
+        message = 'You may need a little work before becoming truly trusted friend material. We believe in you!';
+        badgeElement.className = 'badge warning';
+      } else {
+        badgeText = '💀 YOU ARE GETTING BLOCKED';
+        message = 'This score says you may need to rethink your vibe a bit. But hey, everyone deserves a second chance!';
+        badgeElement.className = 'badge block';
+      }
+
+      badgeElement.textContent = badgeText;
+      messageElement.textContent = message;
+    }
+
+    async function shareQuiz() {
+      const shareUrl = window.location.href;
+      const shareData = {
+        title: 'Best Friend Quiz',
+        text: 'Take this fun Best Friend Quiz and see your score!',
+        url: shareUrl
+      };
+
+      try {
+        if (navigator.share) {
+          await navigator.share(shareData);
+          copiedMsg.textContent = 'Quiz shared successfully!';
+          return;
+        }
+
+        await navigator.clipboard.writeText(shareUrl);
+        copiedMsg.textContent = 'Link copied! Share it with your friends.';
+      } catch (error) {
+        try {
+          await navigator.clipboard.writeText(shareUrl);
+          copiedMsg.textContent = 'Link copied! Share it with your friends.';
+        } catch (copyError) {
+          copiedMsg.textContent = 'Copy failed. You can manually copy this page URL.';
+        }
+      }
+    }
+
+    shareBtn.addEventListener('click', shareQuiz);
+
+    function restartQuiz() {
+      sessionStorage.clear();
+      score = 0;
+      currentQuestion = 0;
+      resultBox.classList.remove('show');
+      quiz.style.display = 'block';
+      copiedMsg.textContent = '';
+      renderQuiz();
+    }
+
+    renderQuiz();
+  </script>
+</body>
+</html>
